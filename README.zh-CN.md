@@ -66,6 +66,8 @@ backlink-automation-submission/
 ├── references/
 │   └── workspace-schema.md
 └── assets/
+    ├── readme/
+    │   └── backlink-workspace-folders.png
     └── templates/
         ├── site-profile.md
         ├── queue.txt
@@ -74,6 +76,135 @@ backlink-automation-submission/
         ├── platform-progress.csv
         └── daily-log.md
 ```
+
+## 运行工作区目录说明
+
+上面的 Skill 仓库保存可复用的指令、脚本和模板。真正执行外链任务时，还需要一个独立的运行工作区，用于存放用户自己的站点资料、平台队列、素材和跨任务历史记录。
+
+![Finder 中的外链工作区文件夹](assets/readme/backlink-workspace-folders.png)
+
+截图展示的运行目录结构如下：
+
+```text
+backlink-workspace/
+├── assets/
+├── platforms/
+├── records/
+├── sites/
+├── skills/
+└── tmp/
+```
+
+| 文件夹 | 是否必需 | 作用 | 持久化要求 |
+|---|---|---|---|
+| `assets/` | 建议保留 | 存放已经批准的 logo、截图、图标和其他站点素材 | 保留可重复使用的源素材 |
+| `platforms/` | 必需 | 存放有序执行 CSV、`queue.txt` 和黑名单 | 长期保留，不得随意改变顺序 |
+| `records/` | 必需 | 存放跨任务游标、逐平台状态、日报和可选证据 | 持久化的事实来源 |
+| `sites/` | 必需 | 每个目标网站对应一份真实 Markdown 资料 | 持久化配置 |
+| `skills/` | 可选 | 存放工作区内置的本 Skill 或其他自定义 Skill | 仅在使用自包含工作区时保留 |
+| `tmp/` | 可选 | 存放临时截图、下载、转换文件和中间产物 | 不能作为长期状态 |
+
+### `assets/`
+
+这里只保存与目标网站明确相关、并且已经获准用于提交的文件：
+
+```text
+assets/
+└── example-site/
+    ├── logo.png
+    ├── icon.png
+    ├── screenshots/
+    │   ├── dashboard.png
+    │   └── feature.png
+    └── documents/
+        └── product-overview.pdf
+```
+
+站点资料文件应引用这里的素材路径。不要在此保存凭据、身份证明、私人客户数据、浏览器导出文件或无关个人文件。
+
+如果平台因尺寸、格式或比例拒绝素材，应保留经过批准的原图，并把合法转换后的版本放在相同站点目录中，使用清晰文件名区分。
+
+### `platforms/`
+
+该目录决定“哪些平台可以执行”以及“以什么顺序执行”：
+
+```text
+platforms/
+├── queue.txt
+├── public-platforms.csv
+├── high-authority-platforms.csv
+└── blacklist.csv
+```
+
+- `queue.txt` 按顺序列出所有可执行 CSV 文件名；
+- 可执行 CSV 包含 `platform`、`platform_url`、`category`、`notes`；
+- `blacklist.csv` 只用于风险排除，绝对不能执行；
+- 必须保留 CSV 行顺序，因为游标依赖文件名和行位置；
+- 活跃 CSV 改名或重排前，必须先核对已有 `source_key`；
+- 同一个平台出现在另一个 CSV 中，不会因此变成新外链。
+
+### `records/`
+
+该目录是整个工作流的持久化记忆：
+
+```text
+records/
+├── platform-progress.csv
+├── daily/
+│   └── YYYY-MM-DD.md
+└── evidence/
+    └── optional-platform-proof.png
+```
+
+- `platform-progress.csv` 是游标恢复和去重的逐行事实来源；
+- `daily/` 保存方便人阅读的每日摘要、证据链接、阻塞点、数量和下一游标；
+- `evidence/` 是可选目录，可以保存用于证明平台结果的截图或文本抽取；
+- 每处理一个候选平台后，必须立即更新进度和日报；
+- 定时任务之间不能删除、清空或重新创建该目录；
+- 日报游标与更靠后的逐行记录冲突时，必须先修复记录，之后才能打开平台。
+
+### `sites/`
+
+每个真实目标网站对应一个 Markdown 资料文件：
+
+```text
+sites/
+├── ExampleSite.md
+└── AnotherProduct.md
+```
+
+资料应包含规范网址、产品介绍、目标用户、分类、标签、联系邮箱、已批准素材路径、授权浏览器账号、可用平台账号和限制条件。
+
+系统按 `Website Name` 隔离不同网站的进度。第一次运行后应保持这个名称稳定。除非用户明确要求，否则应排除 demo 或 test 资料。
+
+### `skills/`
+
+这是可选目录，用于建立一个可以独立移动的自包含工作区：
+
+```text
+skills/
+└── backlink-automation-submission/
+    ├── SKILL.md
+    ├── scripts/
+    ├── references/
+    └── assets/
+```
+
+当自动化运行器从工作区加载 Skill 时使用该目录。如果 Skill 已经全局安装在 `~/.codex/skills/` 或其他 Agent 管理目录中，可以省略它。
+
+不要把执行记录或目标站点素材混入 `skills/`。这里应只保存可复用指令和配套资源。
+
+### `tmp/`
+
+该可选目录只用于一次任务中的临时文件：
+
+- 临时截图；
+- 当前提交需要的下载文件；
+- 转换后的图片版本；
+- 临时文本抽取；
+- 短期浏览器交接产物。
+
+禁止在 `tmp/` 中保存密码、一次性验证码、Cookie、Token、浏览器账号目录或永久游标。即使该目录为空，下一次任务也必须能够正常恢复。
 
 ## 使用要求
 

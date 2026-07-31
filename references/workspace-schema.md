@@ -12,9 +12,11 @@ backlink-workspace/
 │   ├── queue.txt
 │   ├── public-platforms.csv
 │   └── blacklist.csv
-└── records/
-    ├── platform-progress.csv
-    └── daily/
+├── records/
+│   ├── platform-progress.csv
+│   └── daily/
+├── skills/                  # optional workspace-local skills
+└── tmp/                     # optional disposable files
 ```
 
 Copy starter files from `assets/templates/` and replace the sample values.
@@ -106,3 +108,15 @@ Include:
 - exact blockers
 
 The daily log is a readable audit trail. `platform-progress.csv` remains the row-level source of truth.
+
+## Optional workspace-local skills
+
+Use `skills/` only when the automation runner loads skills directly from the workspace. Keep reusable skill instructions and resources there; do not mix in target-site assets or execution records.
+
+Omit this folder when the skill is installed in a global agent-managed skills directory.
+
+## Temporary files
+
+Use `tmp/` only for disposable downloads, screenshots, conversions, and intermediate artifacts. Never store credentials, OTPs, cookies, tokens, browser profiles, or persistent cursor state there.
+
+The workflow must remain resumable when `tmp/` is empty.

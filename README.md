@@ -66,6 +66,8 @@ backlink-automation-submission/
 ├── references/
 │   └── workspace-schema.md
 └── assets/
+    ├── readme/
+    │   └── backlink-workspace-folders.png
     └── templates/
         ├── site-profile.md
         ├── queue.txt
@@ -74,6 +76,135 @@ backlink-automation-submission/
         ├── platform-progress.csv
         └── daily-log.md
 ```
+
+## Runtime workspace folders
+
+The Skill repository above contains the reusable instructions, script, and templates. The runtime workspace is a separate directory containing one user's sites, platform queues, assets, and persistent execution history.
+
+![Finder view of the backlink workspace folders](assets/readme/backlink-workspace-folders.png)
+
+The screenshot shows this runtime structure:
+
+```text
+backlink-workspace/
+├── assets/
+├── platforms/
+├── records/
+├── sites/
+├── skills/
+└── tmp/
+```
+
+| Folder | Required | Purpose | Persistence rule |
+|---|---|---|---|
+| `assets/` | Recommended | Approved logos, screenshots, icons, and other site-specific submission media | Keep reusable source assets |
+| `platforms/` | Yes | Ordered executable CSVs, `queue.txt`, and blacklist data | Keep stable; preserve queue order |
+| `records/` | Yes | Cross-run cursor, per-platform state, daily logs, and optional evidence | Persistent source of truth |
+| `sites/` | Yes | One truthful Markdown profile per target website | Persistent configuration |
+| `skills/` | Optional | A workspace-local copy of this Skill or other custom skills | Keep only when using a self-contained workspace |
+| `tmp/` | Optional | Disposable screenshots, downloads, conversions, and intermediate artifacts | Never use as durable state |
+
+### `assets/`
+
+Store only files that are clearly associated with a target website and approved for submission:
+
+```text
+assets/
+└── example-site/
+    ├── logo.png
+    ├── icon.png
+    ├── screenshots/
+    │   ├── dashboard.png
+    │   └── feature.png
+    └── documents/
+        └── product-overview.pdf
+```
+
+Reference these files from the matching site profile. Do not store credentials, identity documents, private customer data, browser exports, or unrelated personal files here.
+
+If a platform rejects an asset because of size, format, or aspect ratio, keep the approved original and place any legitimate derived version beside it with a descriptive filename.
+
+### `platforms/`
+
+This folder defines what may be processed and in which order:
+
+```text
+platforms/
+├── queue.txt
+├── public-platforms.csv
+├── high-authority-platforms.csv
+└── blacklist.csv
+```
+
+- `queue.txt` lists executable CSV filenames in exact order.
+- Executable CSVs contain `platform`, `platform_url`, `category`, and `notes`.
+- `blacklist.csv` is an exclusion and risk reference; it is never executable.
+- Preserve row order because the cursor depends on file and row order.
+- Do not rename or reorder an active CSV without reconciling existing `source_key` values.
+- Adding the same platform to another CSV does not make it a new backlink.
+
+### `records/`
+
+This folder is the persistent memory of the workflow:
+
+```text
+records/
+├── platform-progress.csv
+├── daily/
+│   └── YYYY-MM-DD.md
+└── evidence/
+    └── optional-platform-proof.png
+```
+
+- `platform-progress.csv` is the row-level source of truth for cursor recovery and deduplication.
+- `daily/` contains human-readable summaries, evidence links, blockers, totals, and the next cursor.
+- `evidence/` is optional and may store approved screenshots or extracts proving a platform result.
+- Update progress and the daily log immediately after every candidate.
+- Do not delete, truncate, or recreate this folder between scheduled runs.
+- If the daily cursor conflicts with later row-level progress, reconcile the records before browsing.
+
+### `sites/`
+
+Store one Markdown profile per real target website:
+
+```text
+sites/
+├── ExampleSite.md
+└── AnotherProduct.md
+```
+
+Each profile should contain the canonical URL, descriptions, users, categories, tags, contact email, approved asset paths, authorized browser profile, available accounts, and constraints.
+
+Progress is isolated by `Website Name`. Keep that value stable after the first run. Exclude demo or test profiles unless the user explicitly requests them.
+
+### `skills/`
+
+This optional folder makes a workspace self-contained:
+
+```text
+skills/
+└── backlink-automation-submission/
+    ├── SKILL.md
+    ├── scripts/
+    ├── references/
+    └── assets/
+```
+
+Use it when the automation runner loads skills from the workspace. Omit it when the Skill is installed globally under `~/.codex/skills/` or another agent-managed directory.
+
+Do not mix execution records or target-site assets into `skills/`. The folder should contain reusable instructions and supporting resources only.
+
+### `tmp/`
+
+Use this optional folder for disposable intermediate files:
+
+- temporary screenshots;
+- downloads needed during one submission;
+- converted image variants;
+- extracted text;
+- transient browser handoff artifacts.
+
+Never store passwords, OTPs, cookies, tokens, browser profiles, or permanent cursor state in `tmp/`. A later run must be able to resume correctly even when this folder is empty.
 
 ## Requirements
 

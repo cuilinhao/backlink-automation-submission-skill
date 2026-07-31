@@ -1,0 +1,4 @@
+interface:
+  display_name: "Backlink Automation Submission"
+  short_description: "Resume and dedupe white-hat backlink submission queues."
+  default_prompt: "Use $backlink-automation-submission to resume my backlink queue, avoid duplicates, verify evidence, and persist the next cursor."
